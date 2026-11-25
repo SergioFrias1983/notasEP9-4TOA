@@ -105,6 +105,10 @@
   .cartel { margin: 0 12px 10px; padding: 12px 14px; border-radius: 12px;
     background: #e8f1fb; border: 1px solid #bcd0e6; color: #1e3a5f;
     font-size: .98rem; line-height: 1.35; text-align: center; }
+  .btnForm { display: block; margin-top: 6px; padding: 8px 6px; border-radius: 8px;
+    background: #6d28d9; color: #fff; font-weight: 600; font-size: .85rem; text-decoration: none; }
+  .btnForm:active { background: #5b21b6; }
+  .thForm { color: #fff; text-decoration: none; }
   [hidden] { display: none !important; }
 </style>
 </head>
@@ -142,7 +146,7 @@
 
 <script>
 /* Versión de la página: se cambia en cada actualización */
-const VERSION = "2.2";
+const VERSION = "2.3";
 const FECHA_VERSION = "25/11/2026";
 
 /* ===================== CONFIGURACIÓN =====================
@@ -161,7 +165,11 @@ const CONFIG = {
   titulo: "4to A – 3er trimestre",
   notaBaja: 6,                                       // notas menores a este número se marcan en rojo
   contador: "https://script.google.com/macros/s/AKfycbwd5UiLv2NuTsjqLAVbmjeHV24IHCsvHYyD0JLTx9BR6IvwaYuRj0yMG3JcNOGEYeGB/exec",                                  // link de la aplicación web de Apps Script (hoja VISTAS). Vacío = sin contador
-  pagina: "4TOA-3erTRIM"                             // nombre con el que se anotan las visitas en la hoja VISTAS
+  pagina: "4TOA-3erTRIM",                            // nombre con el que se anotan las visitas en la hoja VISTAS
+  // Formularios para completar: nombre de la actividad (fila 1) → link del formulario
+  formularios: {
+    "act08": "https://forms.gle/Yf4MUPjJ8RBkF6Fy6"
+  }
 };
 
 const p = new URLSearchParams(location.search);
@@ -175,8 +183,10 @@ const cfg = {
   titulo: p.get("titulo") || CONFIG.titulo,
   notaBaja: Number(p.get("notaBaja") || CONFIG.notaBaja),
   contador: CONFIG.contador,
-  pagina: p.get("pagina") || (p.get("hoja") ? (p.get("titulo") || p.get("hoja")) : CONFIG.pagina)
+  pagina: p.get("pagina") || (p.get("hoja") ? (p.get("titulo") || p.get("hoja")) : CONFIG.pagina),
+  formularios: CONFIG.formularios || {}
 };
+const linkForm = et => cfg.formularios[String(et).trim().toLowerCase()] || "";
 
 const $ = id => document.getElementById(id);
 $("version").textContent = "Versión " + VERSION + " · " + FECHA_VERSION;
@@ -310,6 +320,16 @@ function armarLista() {
       d.innerHTML = '<span class="et"></span><span class="v"></span>';
       d.querySelector(".et").textContent = n.et;
       d.querySelector(".v").textContent = n.v === "" ? "–" : n.v;
+      const lf = linkForm(n.et);
+      if (lf) {
+        const a = document.createElement("a");
+        a.className = "btnForm";
+        a.href = lf; a.target = "_blank"; a.rel = "noopener";
+        a.textContent = "📝 Abrir";
+        a.addEventListener("click", () => registrar("Formulario " + n.et, a.closest("li")?.querySelector(".nom")?.textContent).catch(() => {}));
+        d.appendChild(a);
+        d.classList.add("conForm");
+      }
       grilla.appendChild(d);
     });
     const pie = document.createElement("div");
@@ -374,6 +394,13 @@ function armarTabla() {
   titulos.forEach((t, i) => {
     const th = document.createElement("th");
     th.textContent = t;
+    if (i > 0 && linkForm(t)) {
+      const a = document.createElement("a");
+      a.href = linkForm(t); a.target = "_blank"; a.rel = "noopener";
+      a.className = "thForm"; a.textContent = " 📝"; a.title = "Abrir formulario";
+      a.addEventListener("click", () => registrar("Formulario " + t).catch(() => {}));
+      th.appendChild(a);
+    }
     if (i === 0) th.className = "nombre";
     cab.appendChild(th);
   });
