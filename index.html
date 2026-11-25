@@ -105,9 +105,15 @@
   .cartel { margin: 0 12px 10px; padding: 12px 14px; border-radius: 12px;
     background: #e8f1fb; border: 1px solid #bcd0e6; color: #1e3a5f;
     font-size: .98rem; line-height: 1.35; text-align: center; }
-  .btnForm { display: block; margin-top: 6px; padding: 8px 6px; border-radius: 8px;
-    background: #6d28d9; color: #fff; font-weight: 600; font-size: .85rem; text-decoration: none; }
-  .btnForm:active { background: #5b21b6; }
+  .forms { display: flex; flex-direction: column; gap: 8px; margin-top: 12px; }
+  .btnForm { display: flex; align-items: center; justify-content: center; gap: 10px;
+    min-height: 48px; padding: 10px 16px; border-radius: 12px; text-decoration: none;
+    background: var(--head); color: #fff; font-weight: 700; font-size: 1.05rem;
+    border: 2px solid var(--head); box-shadow: 0 2px 6px rgba(47,93,138,.25); }
+  .btnForm .ext { font-size: 1.1rem; opacity: .9; }
+  .btnForm:active { transform: translateY(1px); box-shadow: none; }
+  .btnForm:focus-visible { outline: 3px solid #f59e0b; outline-offset: 2px; }
+  .btnForm.hecho { background: #fff; color: var(--head); box-shadow: none; font-weight: 600; }
   .thForm { color: #fff; text-decoration: none; }
   [hidden] { display: none !important; }
 </style>
@@ -146,7 +152,7 @@
 
 <script>
 /* Versión de la página: se cambia en cada actualización */
-const VERSION = "2.3";
+const VERSION = "2.4";
 const FECHA_VERSION = "25/11/2026";
 
 /* ===================== CONFIGURACIÓN =====================
@@ -320,16 +326,7 @@ function armarLista() {
       d.innerHTML = '<span class="et"></span><span class="v"></span>';
       d.querySelector(".et").textContent = n.et;
       d.querySelector(".v").textContent = n.v === "" ? "–" : n.v;
-      const lf = linkForm(n.et);
-      if (lf) {
-        const a = document.createElement("a");
-        a.className = "btnForm";
-        a.href = lf; a.target = "_blank"; a.rel = "noopener";
-        a.textContent = "📝 Abrir";
-        a.addEventListener("click", () => registrar("Formulario " + n.et, a.closest("li")?.querySelector(".nom")?.textContent).catch(() => {}));
-        d.appendChild(a);
-        d.classList.add("conForm");
-      }
+      if (linkForm(n.et)) d.querySelector(".et").textContent = n.et + " 📝";
       grilla.appendChild(d);
     });
     const pie = document.createElement("div");
@@ -343,7 +340,25 @@ function armarLista() {
       pr.querySelector(".v").textContent = a.promedio === "" ? "–" : a.promedio;
       det.append(pr);
     }
-    det.append(grilla, pie);
+    // Botones grandes para los formularios de las actividades (debajo de la grilla)
+    const forms = document.createElement("div");
+    forms.className = "forms";
+    a.notas.forEach(n => {
+      const lf = linkForm(n.et);
+      if (!lf) return;
+      const hecho = n.v !== "";
+      const b = document.createElement("a");
+      b.className = "btnForm" + (hecho ? " hecho" : "");
+      b.href = lf; b.target = "_blank"; b.rel = "noopener";
+      b.setAttribute("aria-label", (hecho ? "Abrir de nuevo el formulario de " : "Completar el formulario de ") + n.et + " (se abre en una pestaña nueva)");
+      b.innerHTML = '<span class="txt"></span><span class="ext" aria-hidden="true">↗</span>';
+      b.querySelector(".txt").textContent = hecho ? "Abrir de nuevo " + n.et : "📝 Completar " + n.et;
+      b.addEventListener("click", () => registrar("Formulario " + n.et, a.nombre).catch(() => {}));
+      forms.appendChild(b);
+    });
+    det.append(grilla);
+    if (forms.children.length) det.append(forms);
+    det.append(pie);
 
     fila.addEventListener("click", () => alternar(li));
     li.append(fila, det);
