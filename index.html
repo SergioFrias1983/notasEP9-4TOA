@@ -152,8 +152,8 @@
 
 <script>
 /* Versión de la página: se cambia en cada actualización */
-const VERSION = "2.4";
-const FECHA_VERSION = "25/11/2026";
+const VERSION = "2.5";
+const FECHA_VERSION = "26/11/2026";
 
 /* ===================== CONFIGURACIÓN =====================
    Para usar esta página con otra planilla, cambiá estos valores,
@@ -350,9 +350,9 @@ function armarLista() {
       const b = document.createElement("a");
       b.className = "btnForm" + (hecho ? " hecho" : "");
       b.href = lf; b.target = "_blank"; b.rel = "noopener";
-      b.setAttribute("aria-label", (hecho ? "Abrir de nuevo el formulario de " : "Completar el formulario de ") + n.et + " (se abre en una pestaña nueva)");
+      b.setAttribute("aria-label", "Completar el formulario de " + n.et + " (se abre en una pestaña nueva)");
       b.innerHTML = '<span class="txt"></span><span class="ext" aria-hidden="true">↗</span>';
-      b.querySelector(".txt").textContent = hecho ? "Abrir de nuevo " + n.et : "📝 Completar " + n.et;
+      b.querySelector(".txt").textContent = "📝 Completar " + n.et;
       b.addEventListener("click", () => registrar("Formulario " + n.et, a.nombre).catch(() => {}));
       forms.appendChild(b);
     });
